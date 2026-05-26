@@ -43,8 +43,8 @@ public class AuthInterceptor {
         HttpServletRequest request = ((ServletRequestAttributes) requestAttributes).getRequest();
         // 获取当前用户权限
         User loginUser = userService.getLoginUser(request);
-        UserRoleEnum userRoleEnum = UserRoleEnum.getEnumByValue(loginUser.getUserRole());
-        UserRoleEnum mustRoleEnum = UserRoleEnum.getEnumByValue(mustRole);
+        UserRoleEnum userRoleEnum = UserRoleEnum.getByValue(loginUser.getUserRole());
+        UserRoleEnum mustRoleEnum = UserRoleEnum.getByValue(mustRole);
         // 以下代码必须有权限才能通过
         // 没有权限直接拒绝
         ThrowUtils.throwIf(userRoleEnum == null, ErrorCode.NO_AUTH_ERROR);

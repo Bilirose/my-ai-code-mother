@@ -55,6 +55,12 @@
             <version>1.11.7-beta19</version>
         </dependency>
         <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-reactor</artifactId>
+            <version>1.0.0-beta3</version>
+        </dependency>
+        <!-- 数据访问层依赖 -->
+        <dependency>
             <groupId>com.mybatis-flex</groupId>
             <artifactId>mybatis-flex-spring-boot3-starter</artifactId>
             <version>1.11.6</version>

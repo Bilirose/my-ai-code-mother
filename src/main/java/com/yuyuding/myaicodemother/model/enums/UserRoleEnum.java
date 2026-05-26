@@ -23,7 +23,7 @@ public enum UserRoleEnum {
      * @param value
      * @return
      */
-    public static UserRoleEnum getEnumByValue(String value) {
+    public static UserRoleEnum getByValue(String value) {
         if (ObjUtil.isEmpty(value)) return null;
         for (UserRoleEnum item : UserRoleEnum.values()) {
             if (item.getValue().equals(value)) {

@@ -6,6 +6,8 @@ spring:
     url: jdbc:mysql://localhost:3306/my_ai_code_mother
     username: root
     password: rose
+  profiles:
+    active: local
 server:
   port: 8123
   servlet:
@@ -21,4 +23,3 @@ knife4j:
   enable: true
   setting:
     language: zh_cn
-#sk-302171ee519e473d9764eb3d66594470

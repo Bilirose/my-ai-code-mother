@@ -15,8 +15,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.crypto.KeyGenerator;
-
 /**
  * 用户表 实体类。
  *
@@ -97,5 +95,4 @@ public class User implements Serializable {
      */
     @Column(value = "isDelete", isLogicDelete = true)
     private Integer isDelete;
-
 }

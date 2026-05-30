@@ -1,4 +1,4 @@
-package com.yuyuding.myaicodemother.model.dto;
+package com.yuyuding.myaicodemother.model.dto.app;
 
 import com.yuyuding.myaicodemother.common.PageRequest;
 import lombok.Data;

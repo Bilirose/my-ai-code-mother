@@ -1,24 +1,16 @@
-package com.yuyuding.myaicodemother.model.dto;
+package com.yuyuding.myaicodemother.model.dto.user;
 
-import com.yuyuding.myaicodemother.common.PageRequest;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.io.Serializable;
 
 /**
- * 用户查询请求
+ * 用户创建请求
  */
-@EqualsAndHashCode(callSuper = true)
 @Data
-public class UserQueryRequest extends PageRequest implements Serializable {
+public class UserAddRequest implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
-    /**
-     * id
-     */
-    private Long id;
 
     /**
      * 用户昵称
@@ -29,6 +21,11 @@ public class UserQueryRequest extends PageRequest implements Serializable {
      * 账号
      */
     private String userAccount;
+
+    /**
+     * 用户头像
+     */
+    private String userAvatar;
 
     /**
      * 用户简介

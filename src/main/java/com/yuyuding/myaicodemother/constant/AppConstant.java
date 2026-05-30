@@ -2,8 +2,6 @@ package com.yuyuding.myaicodemother.constant;
 
 /**
  * 应用常量
- *
- * @author yuyuding
  */
 public interface AppConstant {
 
@@ -16,6 +14,11 @@ public interface AppConstant {
      * 精选应用优先级
      */
     int GOOD_APP_PRIORITY = 99;
+
+    /**
+     * 默认应用优先级
+     */
+    int DEFAULT_APP_PRIORITY = 99;
 
     /**
      * 默认应用名称

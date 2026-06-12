@@ -3,8 +3,10 @@ package com.yuyuding.myaicodemother.core.saver;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
+import com.yuyuding.myaicodemother.constant.AppConstant;
 import com.yuyuding.myaicodemother.exception.BusinessException;
 import com.yuyuding.myaicodemother.exception.ErrorCode;
+import com.yuyuding.myaicodemother.exception.ThrowUtils;
 import com.yuyuding.myaicodemother.model.enums.CodeGenTypeEnum;
 
 import java.io.File;
@@ -15,19 +17,20 @@ public abstract class CodeFileSaverTemplate<T> {
     /**
      * 文件保存的根目录
      */
-    private static final String FILE_SAVE_ROOT_DIR = System.getProperty("user.dir") + "/tmp/code_output";
+    private static final String FILE_SAVE_ROOT_DIR = AppConstant.CODE_OUTPUT_ROOT_DIR;
 
     /**
      * 模版方法：保存代码的标准流程
      *
      * @param result 代码结果对象
+     * @param appId  应用 ID
      * @return 保存的文件
      */
-    public final File saveCode(T result) {
+    public final File saveCode(T result, Long appId) {
         // 1. 验证输入
         validateInput(result);
         // 2. 构建唯一目录
-        String baseDirPath = buildUniqueDir();
+        String baseDirPath = buildUniqueDir(appId);
         // 3. 保存文件（具体实现交给子类）
         saveFiles(result, baseDirPath);
         // 4. 返回保存的文件
@@ -48,11 +51,13 @@ public abstract class CodeFileSaverTemplate<T> {
     /**
      * 构建文件的唯一路径（业务类型 + 雪花 ID）tmp/code_output/codeType_snowflakeId
      *
+     * @param appId 应用 ID
      * @return 目录路径
      */
-    protected String buildUniqueDir() {
+    protected String buildUniqueDir(Long appId) {
+        ThrowUtils.throwIf(appId == null, ErrorCode.PARAMS_ERROR, "应用 ID 不能为空");
         String codeType = getCodeGenType().getValue();
-        String uniqueName = StrUtil.format("{}_{}", codeType + "_", IdUtil.getSnowflakeNextIdStr());
+        String uniqueName = StrUtil.format("{}_{}", codeType, appId);
         String dirPath = FILE_SAVE_ROOT_DIR + File.separator + uniqueName;
         FileUtil.mkdir(dirPath);
         return dirPath;
@@ -66,7 +71,7 @@ public abstract class CodeFileSaverTemplate<T> {
      * @param content
      */
     public final void writeToFile(String dirPath, String fileName, String content) {
-        if(StrUtil.isNotBlank( content)){
+        if (StrUtil.isNotBlank(content)) {
             String filePath = dirPath + File.separator + fileName;
             FileUtil.writeString(content, filePath, StandardCharsets.UTF_8);
         }

@@ -10,8 +10,6 @@ import reactor.core.publisher.Flux;
 import java.io.File;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @SpringBootTest
 class AiCodeGeneratorFacadeTest {
 
@@ -20,14 +18,14 @@ class AiCodeGeneratorFacadeTest {
 
     @Test
     void generateAndSaveCode() {
-        File file = aiCodeGeneratorFacade.generateAndSaveCode("生成一个HTML页面，内容是：<h1>Hello World</h1>", CodeGenTypeEnum.MULTI_FILE);
+        File file = aiCodeGeneratorFacade.generateAndSaveCode("生成一个HTML页面，内容是：<h1>Hello World</h1>", CodeGenTypeEnum.MULTI_FILE, 1L);
         Assertions.assertNotNull(file);
     }
 
 
     @Test
     void generateAndSaveCodeStream() {
-        Flux<String> codeStream = aiCodeGeneratorFacade.generateAndSaveCodeStream("生成一个HTML页面，内容是：<h1>Hello World</h1>", CodeGenTypeEnum.HTML);
+        Flux<String> codeStream = aiCodeGeneratorFacade.generateAndSaveCodeStream("生成一个HTML页面，内容是：<h1>Hello World</h1>", CodeGenTypeEnum.HTML, 1L);
         // 阻塞等待所有数据收集完成
         List<String> result = codeStream.collectList().block();
         // 验证结果

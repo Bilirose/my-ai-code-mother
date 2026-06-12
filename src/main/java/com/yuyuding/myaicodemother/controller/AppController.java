@@ -2,6 +2,8 @@ package com.yuyuding.myaicodemother.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONUtil;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.yuyuding.myaicodemother.annotation.AuthCheck;
@@ -12,10 +14,7 @@ import com.yuyuding.myaicodemother.constant.AppConstant;
 import com.yuyuding.myaicodemother.constant.UserConstant;
 import com.yuyuding.myaicodemother.exception.ErrorCode;
 import com.yuyuding.myaicodemother.exception.ThrowUtils;
-import com.yuyuding.myaicodemother.model.dto.app.AppAddRequest;
-import com.yuyuding.myaicodemother.model.dto.app.AppAdminUpdateRequest;
-import com.yuyuding.myaicodemother.model.dto.app.AppQueryRequest;
-import com.yuyuding.myaicodemother.model.dto.app.AppUpdateRequest;
+import com.yuyuding.myaicodemother.model.dto.app.*;
 import com.yuyuding.myaicodemother.model.entity.App;
 import com.yuyuding.myaicodemother.model.entity.User;
 import com.yuyuding.myaicodemother.model.vo.AppVO;
@@ -23,13 +22,15 @@ import com.yuyuding.myaicodemother.service.AppService;
 import com.yuyuding.myaicodemother.service.UserService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.http.codec.ServerSentEvent;
+import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 应用表 控制层。
@@ -47,6 +48,63 @@ public class AppController {
     private UserService userService;
 
     // region 用户接口
+
+    /**
+     * 聊天生成代码
+     *
+     * @param appId   应用 id
+     * @param message 提示词
+     * @param request 请求
+     * @return
+     */
+    @GetMapping(value = "/chat/gen/code", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<ServerSentEvent<String>> chatToGenCode(@RequestParam Long appId, @RequestParam String message, HttpServletRequest request) {
+        // 1. 参数校验
+        ThrowUtils.throwIf(appId <= 0, ErrorCode.PARAMS_ERROR, "应用 id 错误");
+        ThrowUtils.throwIf(StrUtil.isBlank(message), ErrorCode.PARAMS_ERROR, "提示词不能为空");
+        // 2. 获取当前登录用户
+        User loginUser = userService.getLoginUser(request);
+        // 3. 调用服务生成代码（SSE 流式返回）
+        Flux<String> contentFlux = appService.chatToGenCode(appId, message, loginUser);
+        return contentFlux.map(chunk -> {
+                    Map<String, String> wrapper = Map.of("d", chunk);
+                    String jsonData = JSONUtil.toJsonStr(wrapper);
+                    return ServerSentEvent.<String>builder()
+                            .data(jsonData)
+                            .build();
+                })
+                .concatWith(Mono.just(
+                        // 结束标记
+                        ServerSentEvent.<String>builder()
+                                .event("done")
+                                .data("")
+                                .build()
+                ));
+    }
+
+    /**
+     * 部署应用
+     *
+     * @param appDeployRequest 应用部署请求
+     * @param request          请求
+     * @return 可访问的部署 URL
+     */
+    @PostMapping("/deploy")
+    public BaseResponse<String> deployApp(@RequestBody AppDeployRequest appDeployRequest, HttpServletRequest request) {
+        // 检查部署请求是否为空
+        ThrowUtils.throwIf(appDeployRequest == null, ErrorCode.PARAMS_ERROR);
+        // 获取 appId
+        Long appId = appDeployRequest.getAppId();
+        // 检查 appId 是否为空
+        ThrowUtils.throwIf(appId == null || appId <= 0, ErrorCode.PARAMS_ERROR, "应用 id 错误");
+        // 获取当前登录用户
+        User loginUser = userService.getLoginUser(request);
+        // 调用服务部署应用
+        String deployUrl = appService.deployApp(appId, loginUser);
+        // 返回部署 URL
+        return ResultUtils.success(deployUrl);
+    }
+
 
     /**
      * 创建应用
@@ -121,7 +179,7 @@ public class AppController {
         ThrowUtils.throwIf(appQueryRequest == null, ErrorCode.PARAMS_ERROR);
         long pageNum = appQueryRequest.getPageNum();
         long pageSize = appQueryRequest.getPageSize();
-        ThrowUtils.throwIf(pageNum <= 0 || pageSize <= 0, ErrorCode.PARAMS_ERROR,"pageNum与pageSize不能小于0");
+        ThrowUtils.throwIf(pageNum <= 0 || pageSize <= 0, ErrorCode.PARAMS_ERROR, "pageNum与pageSize不能小于0");
         // 限制每页最多20个
         ThrowUtils.throwIf(pageSize > AppConstant.MAX_PAGE_SIZE, ErrorCode.PARAMS_ERROR, "每页最多 20 个");
         // 只查询当前用户的app
@@ -147,7 +205,7 @@ public class AppController {
         ThrowUtils.throwIf(appQueryRequest == null, ErrorCode.PARAMS_ERROR);
         long pageNum = appQueryRequest.getPageNum();
         long pageSize = appQueryRequest.getPageSize();
-        ThrowUtils.throwIf(pageNum <= 0 || pageSize <= 0, ErrorCode.PARAMS_ERROR,"pageNum与pageSize不能小于0");
+        ThrowUtils.throwIf(pageNum <= 0 || pageSize <= 0, ErrorCode.PARAMS_ERROR, "pageNum与pageSize不能小于0");
         // 限制每页最多20个
         ThrowUtils.throwIf(pageSize > AppConstant.MAX_PAGE_SIZE, ErrorCode.PARAMS_ERROR, "每页最多 20 个");
         // 只查询精选app
@@ -219,7 +277,7 @@ public class AppController {
         ThrowUtils.throwIf(appQueryRequest == null, ErrorCode.PARAMS_ERROR);
         long pageNum = appQueryRequest.getPageNum();
         long pageSize = appQueryRequest.getPageSize();
-        ThrowUtils.throwIf(pageNum <= 0 || pageSize <= 0, ErrorCode.PARAMS_ERROR,"pageNum与pageSize不能小于0");
+        ThrowUtils.throwIf(pageNum <= 0 || pageSize <= 0, ErrorCode.PARAMS_ERROR, "pageNum与pageSize不能小于0");
         QueryWrapper queryWrapper = appService.getQueryWrapper(appQueryRequest);
         // 分页查询
         Page<App> appPage = appService.page(Page.of(pageNum, pageSize), queryWrapper);

@@ -24,4 +24,19 @@ public interface AppConstant {
      * 默认应用名称
      */
     String DEFAULT_APP_NAME = "未命名应用";
+
+    /**
+     * 应用生成根目录
+     */
+    String CODE_OUTPUT_ROOT_DIR = System.getProperty("user.dir") + "/tmp/code_output";
+
+    /**
+     * 应用部署根目录
+     */
+    String CODE_DEPLOY_ROOT_DIR = System.getProperty("user.dir") + "/tmp/code_deploy";
+
+    /**
+     * 应用部署域名
+     */
+    String CODE_DEPLOY_HOST = "http://localhost:8080";
 }

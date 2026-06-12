@@ -8,13 +8,12 @@ import com.yuyuding.myaicodemother.model.dto.app.AppUpdateRequest;
 import com.yuyuding.myaicodemother.model.entity.App;
 import com.yuyuding.myaicodemother.model.entity.User;
 import com.yuyuding.myaicodemother.model.vo.AppVO;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
 /**
- * 应用表 服务层。
- *
- * @author yuyuding
+ * 应用 服务层
  */
 public interface AppService extends IService<App> {
 
@@ -83,5 +82,25 @@ public interface AppService extends IService<App> {
      * @param appQueryRequest
      * @return
      */
-    QueryWrapper getQueryWrapper(AppQueryRequest appQueryRequest);
+    QueryWrapper
+    getQueryWrapper(AppQueryRequest appQueryRequest);
+
+    /**
+     * 通过对话生成代码
+     *
+     * @param appId     应用 ID
+     * @param message   提示词
+     * @param loginUser 登录用户
+     * @return
+     */
+    Flux<String> chatToGenCode(Long appId, String message, User loginUser);
+
+    /**
+     * 应用部署
+     *
+     * @param appId     应用 ID
+     * @param loginUser 登录用户
+     * @return 可访问的部署地址
+     */
+    String deployApp(Long appId, User loginUser);
 }

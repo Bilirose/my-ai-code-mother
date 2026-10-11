@@ -2,7 +2,9 @@ package com.yuyuding.myaicodemother.ai;
 
 import com.yuyuding.myaicodemother.ai.model.HtmlCodeResult;
 import com.yuyuding.myaicodemother.ai.model.MultiFileCodeResult;
+import dev.langchain4j.service.MemoryId;
 import dev.langchain4j.service.SystemMessage;
+import dev.langchain4j.service.UserMessage;
 import reactor.core.publisher.Flux;
 
 public interface AiCodeGeneratorService {

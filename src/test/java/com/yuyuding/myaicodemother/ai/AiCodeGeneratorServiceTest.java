@@ -26,4 +26,14 @@ class AiCodeGeneratorServiceTest {
         MultiFileCodeResult multiFileCode = aiCodeGeneratorService.generateMultiFileCode("生成两个HTML页面，内容是：<h1>Hello World</h1>");
         Assertions.assertNotNull(multiFileCode);
     }
+
+    @Test
+    void testChatMemory(){
+        HtmlCodeResult htmlCode = aiCodeGeneratorService.generateHtmlCode("生成一个HTML页面，内容是：<h1>Hello World</h1>");
+        Assertions.assertNotNull(htmlCode);
+        htmlCode = aiCodeGeneratorService.generateHtmlCode("不要生成网页，告诉我你刚刚做了什么");
+        Assertions.assertNotNull(htmlCode);
+        htmlCode = aiCodeGeneratorService.generateHtmlCode("不要生成网页，告诉我你刚刚做了什么");
+        Assertions.assertNotNull(htmlCode);
+    }
 }

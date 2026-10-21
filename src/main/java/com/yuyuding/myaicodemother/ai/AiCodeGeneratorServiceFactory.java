@@ -26,7 +26,7 @@ public class AiCodeGeneratorServiceFactory {
     ChatModel chatModel;
 
     @Resource
-    StreamingChatModel streamingChatModel;
+    StreamingChatModel openAiStreamingChatModel;
 
     @Resource
     private RedisChatMemoryStore redisChatMemoryStore;
@@ -78,7 +78,7 @@ public class AiCodeGeneratorServiceFactory {
         chatHistoryService.loadChatHistoryToMemory((Long) appId, messageWindowChatMemory, 20);
         return AiServices.builder(AiCodeGeneratorService.class)
                 .chatModel(chatModel)
-                .streamingChatModel(streamingChatModel)
+                .streamingChatModel(openAiStreamingChatModel)
                 .chatMemory(messageWindowChatMemory)
                 .build();
     }

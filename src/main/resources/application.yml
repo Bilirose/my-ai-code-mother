@@ -16,10 +16,19 @@ spring:
       ttl: 3600
   profiles:
     active: local
+  # session
+  session:
+    store-type: redis
+    # session 30 天过期
+    timeout: 2592000
 server:
   port: 8123
   servlet:
     context-path: /api
+    # cookie 30 天过期
+    session:
+      cookie:
+        max-age: 2592000
 # springdoc-openapi
 springdoc:
   group-configs:

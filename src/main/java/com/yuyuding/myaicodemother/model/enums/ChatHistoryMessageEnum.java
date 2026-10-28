@@ -12,8 +12,8 @@ public enum ChatHistoryMessageEnum {
     USER("用户", "user"),
     AI("AI", "ai");
 
-    private String name;
-    private String value;
+    private final String name;
+    private final String value;
 
     ChatHistoryMessageEnum(String name, String value) {
         this.name = name;

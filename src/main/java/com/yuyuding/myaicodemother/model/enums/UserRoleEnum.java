@@ -9,8 +9,8 @@ public enum UserRoleEnum {
     USER("用户", "user"),
     ADMIN("管理员", "admin");
 
-    private String name;
-    private String value;
+    private final String name;
+    private final String value;
 
     UserRoleEnum(String name, String value) {
         this.name = name;

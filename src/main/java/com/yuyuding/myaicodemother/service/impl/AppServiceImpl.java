@@ -9,8 +9,7 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.yuyuding.myaicodemother.constant.AppConstant;
 import com.yuyuding.myaicodemother.core.AiCodeGeneratorFacade;
-import com.yuyuding.myaicodemother.core.parser.CodeParserExecutor;
-import com.yuyuding.myaicodemother.core.saver.CodeFileSaverExecutor;
+import com.yuyuding.myaicodemother.core.handler.StreamHandlerExecutor;
 import com.yuyuding.myaicodemother.exception.BusinessException;
 import com.yuyuding.myaicodemother.exception.ErrorCode;
 import com.yuyuding.myaicodemother.exception.ThrowUtils;
@@ -60,6 +59,9 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
     @Resource
     private ChatHistoryService chatHistoryService;
 
+    @Resource
+    private StreamHandlerExecutor streamHandlerExecutor;
+
     @Override
     public long createApp(AppAddRequest appAddRequest, User loginUser) {
         ThrowUtils.throwIf(appAddRequest == null, ErrorCode.PARAMS_ERROR);
@@ -74,7 +76,7 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
         app.setAppName(appName);
         app.setUserId(loginUser.getId());
         app.setPriority(0);
-        app.setCodeGenType(CodeGenTypeEnum.MULTI_FILE.getValue());
+        app.setCodeGenType(CodeGenTypeEnum.VUE_PROJECT.getValue());
         validApp(app, true);
         boolean result = this.save(app);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
@@ -204,24 +206,9 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App> implements AppSe
         boolean addChatUserMessageResult = chatHistoryService.addChatMessage(appId, message, ChatHistoryMessageEnum.USER.getValue(), loginUser.getId());
         ThrowUtils.throwIf(!addChatUserMessageResult, ErrorCode.OPERATION_ERROR, "保存用户消息失败");
         // 6. 调用 AI 生成代码
-        Flux<String> contentFlux = aiCodeGeneratorFacade.generateAndSaveCodeStream(message, codeGenTypeEnum, appId);
+        Flux<String> codeStream = aiCodeGeneratorFacade.generateAndSaveCodeStream(message, codeGenTypeEnum, appId);
         // 7. 保存ai输出内容到对话历史中
-        // 字符串拼接，用于当流式返回所有的代码之后，再保存代码
-        StringBuilder aiResponseBuilder = new StringBuilder();
-        return contentFlux.map(chunk -> {
-            // 实时收集代码片段
-            aiResponseBuilder.append(chunk);
-            return chunk;
-        }).doOnComplete(() -> {
-            String aiResponse = aiResponseBuilder.toString();
-            boolean addChatAiMessageResult = chatHistoryService.addChatMessage(appId, aiResponse, ChatHistoryMessageEnum.AI.getValue(), loginUser.getId());
-            ThrowUtils.throwIf(!addChatAiMessageResult, ErrorCode.OPERATION_ERROR, "保存AI输出内容失败");
-        }).doOnError(error -> {
-            // 如果 AI 回复失败，也需要保存记录到数据库中
-            String errorMessage = "AI 回复失败：" + error.getMessage();
-            boolean addChatAiMessageResult = chatHistoryService.addChatMessage(appId, errorMessage, ChatHistoryMessageEnum.AI.getValue(), loginUser.getId());
-            ThrowUtils.throwIf(!addChatAiMessageResult, ErrorCode.OPERATION_ERROR, "保存AI输出内容失败");
-        });
+        return streamHandlerExecutor.doExecute(codeGenTypeEnum, codeStream, chatHistoryService, appId, loginUser);
     }
 
     @Override
